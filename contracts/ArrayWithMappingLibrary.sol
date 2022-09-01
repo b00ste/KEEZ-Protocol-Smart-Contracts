@@ -26,11 +26,11 @@ library ArrayWithMappingLibrary {
      */
     function _arrayContains(
         address payable _UNIVERSAL_PROFILE,
-        bytes12 arrayElementMapPrefix,
+        bytes10 arrayElementMapPrefix,
         bytes memory arrayElement
     ) internal view returns (bool, uint256) {
         bytes memory encodedElementIndex = IERC725Y(_UNIVERSAL_PROFILE).getData(
-            bytes32(bytes.concat(arrayElementMapPrefix, bytes20(arrayElement)))
+            bytes32(bytes.concat(arrayElementMapPrefix, bytes2(0), bytes20(arrayElement)))
         );
 
         if (encodedElementIndex.length == 0) {
@@ -48,7 +48,7 @@ library ArrayWithMappingLibrary {
         address _KEY_MANAGER,
         bytes32 arrayLengthKey,
         bytes16 arrayIndexPerfix,
-        bytes12 arrayElementMapPrefix,
+        bytes10 arrayElementMapPrefix,
         bytes memory arrayElement
     ) internal returns (bool) {
         uint256 oldArrayLength = uint256(
@@ -70,12 +70,19 @@ library ArrayWithMappingLibrary {
         values[0] = bytes.concat(bytes32(newArrayLength));
 
         keys[1] = bytes32(
-            bytes.concat(arrayIndexPerfix, bytes16(uint128(oldArrayLength)))
+            bytes.concat(
+                arrayIndexPerfix,
+                bytes16(uint128(oldArrayLength))
+            )
         );
         values[1] = arrayElement;
 
         keys[2] = bytes32(
-            bytes.concat(arrayElementMapPrefix, bytes20(arrayElement))
+            bytes.concat(
+                arrayElementMapPrefix,
+                bytes2(0),
+                bytes20(arrayElement)
+            )
         );
         values[2] = bytes.concat(bytes32(oldArrayLength));
 
@@ -98,7 +105,7 @@ library ArrayWithMappingLibrary {
         address _KEY_MANAGER,
         bytes32 arrayLengthKey,
         bytes16 arrayIndexPerfix,
-        bytes12 arrayElementMapPrefix,
+        bytes10 arrayElementMapPrefix,
         bytes memory arrayElement
     ) internal returns (bool) {
         uint256 oldArrayLength = uint256(
@@ -129,25 +136,36 @@ library ArrayWithMappingLibrary {
         values[0] = bytes.concat(bytes32(newArrayLength));
 
         keys[1] = bytes32(
-            bytes.concat(arrayIndexPerfix, bytes16(uint128(elementIndex)))
+            bytes.concat(
+                arrayIndexPerfix,
+                bytes16(uint128(elementIndex))
+            )
         );
         values[1] = encodedArrayLastElement;
 
         keys[2] = bytes32(
-            bytes.concat(arrayIndexPerfix, bytes16(uint128(newArrayLength)))
+            bytes.concat(
+                arrayIndexPerfix,
+                bytes16(uint128(newArrayLength))
+            )
         );
         values[2] = "";
 
         keys[3] = bytes32(
             bytes.concat(
                 arrayElementMapPrefix,
+                bytes2(0),
                 bytes20(encodedArrayLastElement)
             )
         );
         values[3] = bytes.concat(bytes32(elementIndex));
 
         keys[4] = bytes32(
-            bytes.concat(arrayElementMapPrefix, bytes20(arrayElement))
+            bytes.concat(
+                arrayElementMapPrefix,
+                bytes2(0),
+                bytes20(arrayElement)
+            )
         );
         values[4] = "";
 
