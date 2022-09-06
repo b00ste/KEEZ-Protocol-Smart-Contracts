@@ -48,11 +48,19 @@ import {
   _DAO_PROPOSAL_MAXIMUM_CHOICES_PER_VOTE_SUFFIX
 } from "./DaoConstants.sol";
 
+import {
+  _LSP6KEY_ADDRESSPERMISSIONS_PERMISSIONS_PREFIX
+} from "@lukso/lsp-smart-contracts/contracts/LSP6KeyManager/LSP6Constants.sol";
+
 // Custom error
 import {IndexedError} from "../Errors.sol";
 
 // Contract's interface
 import {IDaoProposals} from "./IDaoProposals.sol";
+
+interface Ownable {
+  function owner() external view virtual returns (address);
+}
 
 /**
  *
@@ -411,8 +419,26 @@ contract DaoProposals is IDaoProposals {
     returns(bool result)
   {
     result = true;
-    // Revert if `recoveredAddress` is not the same as `_signers[i]` 
-    if (_userAddress != _recoveredAddressFromSig) result = false;
+    // Revert if `recoveredAddress` is not the same as `_signers[i]`
+    if (_userAddress.code.length == 0) {
+      if (_userAddress != _recoveredAddressFromSig) result = false;
+    }
+    else {
+      if (
+        _recoveredAddressFromSig != Ownable(_userAddress).owner() ||
+        bytes32(
+          IERC725Y(_userAddress).getData(
+            bytes32(
+              bytes.concat(
+                _LSP6KEY_ADDRESSPERMISSIONS_PERMISSIONS_PREFIX,
+                bytes20(_recoveredAddressFromSig)
+              )
+            )
+          )  
+        ) & bytes32(uint256(1 << 5)) == 0
+      ) result = false;
+    }
+
     // Verify if user delegated his vote
     bytes memory dalegatedValue = IERC725Y(UNIVERSAL_PROFILE).getData(bytes32(bytes.concat(_DAO_DELEGATEE_PREFIX, bytes20(_recoveredAddressFromSig))));
     if (dalegatedValue.length != 0) result = false;
